@@ -2,6 +2,7 @@ package com.matchgame;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -12,12 +13,14 @@ public class BlockGrid implements DragController {
   private final Group group;
   private List<Block> currentSelection = null;
 
-  public BlockGrid(Texture blockTexture, Stage stage) {
+  public BlockGrid(List<Texture> blockTextures, Stage stage) {
+    Random random = new Random();
+
     group = new Group();
     Block block = null;
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
-        block = new Block(i, j, blockTexture, this);
+        block = new Block(i, j, blockTextures.get(random.nextInt(blockTextures.size())), this);
         group.addActor(block);
       }
     }

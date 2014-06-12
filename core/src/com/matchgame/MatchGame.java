@@ -1,5 +1,8 @@
 package com.matchgame;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
@@ -10,16 +13,18 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class MatchGame extends ApplicationAdapter {
 	SpriteBatch batch;
-	Texture img;
   private Stage stage;
+  private final List<Texture> blockTextures = new ArrayList<Texture>();
 
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
-		img = new Texture("Block3.png");
+		for (int i = 0; i < 4; i++) {
+		  blockTextures.add(new Texture("Block" + (i + 1) + ".png"));
+		}
 		stage = new Stage(new ScreenViewport());
 		Gdx.input.setInputProcessor(stage);
-		new BlockGrid(img, stage);
+		new BlockGrid(blockTextures, stage);
 	}
 
 	@Override
