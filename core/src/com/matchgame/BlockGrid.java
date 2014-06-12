@@ -33,6 +33,9 @@ class Block extends Actor {
     w = blockTexture.getWidth() / 2.5f;
     h = blockTexture.getHeight() / 2.5f;
 
+    w = 200f;
+    h = 200f;
+
     System.out.println("Hi");
 
     setBounds(x * w, y * h, w, h);
@@ -77,12 +80,22 @@ public class BlockGrid implements DragController {
 
   public BlockGrid(Texture blockTexture, Stage stage) {
     group = new Group();
+    Block block = null;
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
-        group.addActor(new Block(i, j, blockTexture, this));
+        block = new Block(i, j, blockTexture, this);
+        group.addActor(block);
       }
     }
     stage.addActor(group);
+    float groupWidth = group.getChildren().get(0).getWidth() * 4f;
+    float groupHeight = group.getChildren().get(0).getHeight() * 4f;
+
+    float stageWidth = stage.getWidth();
+    float stageHeight = stage.getHeight();
+
+    float padding = (stageWidth - groupWidth) / 2;
+    group.setPosition(padding, stageHeight - groupHeight - padding);
   }
 
   // DragController.
