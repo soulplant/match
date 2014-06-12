@@ -1,5 +1,8 @@
 package com.matchgame;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -7,6 +10,7 @@ import com.matchgame.Block.DragController;
 
 public class BlockGrid implements DragController {
   private final Group group;
+  private List<Block> currentSelection = null;
 
   public BlockGrid(Texture blockTexture, Stage stage) {
     group = new Group();
@@ -30,17 +34,25 @@ public class BlockGrid implements DragController {
 
   // DragController.
   @Override
-  public void onDragStart(float x, float y) {
-    System.out.println("onDragStart(" + x + ", " + y + ")");
+  public void onDragStart(Block block) {
+    currentSelection = new ArrayList<Block>();
+    currentSelection.add(block);
+    block.setSelected(true);
+    System.out.println("onDragStart(" + block.getLogicX() + ", " + block.getLogicY() + ")");
   }
 
   @Override
-  public void onDragEnter(float x, float y) {
-    System.out.println("onDragEnter(" + x + ", " + y + ")");
+  public void onDragEnter(Block block) {
+    currentSelection.add(block);
+    block.setSelected(true);
+    System.out.println("onDragEnter(" + block.getLogicX() + ", " + block.getLogicY() + ")");
   }
 
   @Override
-  public void onDragEnd(float x, float y) {
-    System.out.println("onDragEnd(" + x + ", " + y + ")");
+  public void onDragEnd(Block block) {
+    for (Block b : currentSelection) {
+      b.setSelected(false);
+    }
+    System.out.println("onDragEnd(" + block.getLogicX() + ", " + block.getLogicY() + ")");
   }
 }

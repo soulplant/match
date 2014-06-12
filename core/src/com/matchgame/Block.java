@@ -1,7 +1,10 @@
 package com.matchgame;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -13,11 +16,12 @@ class Block extends Actor {
   private float w;
   private float h;
   private final DragController dragController;
+  private boolean isSelected;
 
   public interface DragController {
-    void onDragStart(float x, float y);
-    void onDragEnter(float x, float y);
-    void onDragEnd(float x, float y);
+    void onDragStart(Block block);
+    void onDragEnter(Block block);
+    void onDragEnd(Block block);
   }
 
   public Block(int x, int y, Texture blockTexture, final DragController dragController) {
@@ -27,13 +31,8 @@ class Block extends Actor {
     this.blockTexture = blockTexture;
     this.dragController = dragController;
 
-    w = blockTexture.getWidth() / 2.5f;
-    h = blockTexture.getHeight() / 2.5f;
-
     w = 200f;
     h = 200f;
-
-    System.out.println("Hi");
 
     setBounds(x * w, y * h, w, h);
 
@@ -42,24 +41,32 @@ class Block extends Actor {
       public boolean touchDown(InputEvent event, float x, float y, int pointer,
           int button) {
         log("touchDown");
-        dragController.onDragStart(Block.this.x, Block.this.y);
+        dragController.onDragStart(Block.this);
         return true;
       }
 
       @Override
       public void touchUp(InputEvent event, float x, float y, int pointer,
           int button) {
-        dragController.onDragEnd(Block.this.x, Block.this.y);
+        dragController.onDragEnd(Block.this);
         log("touchUp");
       }
 
       @Override
       public void enter(InputEvent event, float x, float y, int pointer,
           Actor fromActor) {
-        dragController.onDragEnter(Block.this.x, Block.this.y);
+        dragController.onDragEnter(Block.this);
         log("enter");
       }
     });
+  }
+
+  public int getLogicX() {
+    return x;
+  }
+
+  public int getLogicY() {
+    return y;
   }
 
   private void log(String msg) {
@@ -69,5 +76,24 @@ class Block extends Actor {
   @Override
   public void draw(Batch batch, float parentAlpha) {
     batch.draw(blockTexture, x * w, y * h, w, h);
+    if (isSelected()) {
+      batch.end();
+      ShapeRenderer renderer = new ShapeRenderer();
+      renderer.setTransformMatrix(batch.getTransformMatrix());
+      renderer.setColor(Color.GREEN);
+      renderer.begin(ShapeType.Filled);
+      renderer.ellipse(x * w, y * h, w, h);
+      renderer.end();
+      renderer.dispose();
+      batch.begin();
+    }
+  }
+
+  private boolean isSelected() {
+    return isSelected;
+  }
+
+  public void setSelected(boolean selected) {
+    isSelected = selected;
   }
 }
