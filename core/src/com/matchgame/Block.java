@@ -82,7 +82,7 @@ class Block extends Actor {
       renderer.setTransformMatrix(batch.getTransformMatrix());
       renderer.setColor(Color.GREEN);
       renderer.begin(ShapeType.Filled);
-      renderer.ellipse(x * w, y * h, w, h);
+      renderer.ellipse(x * w + w / 4f, y * h + h / 4f, w / 2f, h / 2f);
       renderer.end();
       renderer.dispose();
       batch.begin();

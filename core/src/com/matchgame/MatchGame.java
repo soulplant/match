@@ -16,7 +16,7 @@ public class MatchGame extends ApplicationAdapter {
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
-		img = new Texture("badlogic.jpg");
+		img = new Texture("Block3.png");
 		stage = new Stage(new ScreenViewport());
 		Gdx.input.setInputProcessor(stage);
 		new BlockGrid(img, stage);
@@ -24,7 +24,7 @@ public class MatchGame extends ApplicationAdapter {
 
 	@Override
 	public void render () {
-		Gdx.gl.glClearColor(1, 0, 0, 1);
+		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		stage.act(Gdx.graphics.getDeltaTime());
 		stage.draw();
