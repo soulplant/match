@@ -37,7 +37,8 @@ public class BlockGrid implements Block.Delegate {
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
         int colorIndex = random.nextInt(blockTextures.size());
-        block = new Block(i, j, colorIndex, blockTextures.get(colorIndex), new ShapeRenderer(), this);
+        block = new Block(i, j, colorIndex, blockTextures.get(colorIndex),
+            new ShapeRenderer(), this);
         group.addActor(block);
       }
     }
@@ -54,6 +55,14 @@ public class BlockGrid implements Block.Delegate {
 
   @Override
   public void onDragEnter(Block block) {
+    if (selection == null) {
+      // Must be dragging from nowhere onto a block. We ignore this because that
+      // means we won't catch the onDragEnd() event either. This is intended
+      // behavior anyway, as it's weird for people to drag from somewhere else
+      // onto their first block. Note this is also how the android lock screen
+      // works.
+      return;
+    }
     if (selection.canAdd(block)) {
       selection.addBlock(block);
       block.setSelected(true);
