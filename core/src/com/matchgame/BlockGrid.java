@@ -1,29 +1,26 @@
 package com.matchgame;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.matchgame.Block.DragController;
 
-public class BlockGrid implements DragController {
+public class BlockGrid implements Block.Delegate {
   private final Group group;
-  private List<Block> currentSelection = null;
+  private BlockSelection selection = null;
+  private final Random random;
+  private final List<Texture> blockTextures;
+  private int childrenLeft = 0;
 
   public BlockGrid(List<Texture> blockTextures, Stage stage) {
-    Random random = new Random();
+    this.blockTextures = blockTextures;
+    random = new Random();
 
     group = new Group();
-    Block block = null;
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
-        block = new Block(i, j, blockTextures.get(random.nextInt(blockTextures.size())), this);
-        group.addActor(block);
-      }
-    }
+    createBlocks();
     stage.addActor(group);
     float groupWidth = group.getChildren().get(0).getWidth() * 4f;
     float groupHeight = group.getChildren().get(0).getHeight() * 4f;
@@ -35,27 +32,50 @@ public class BlockGrid implements DragController {
     group.setPosition(padding, stageHeight - groupHeight - padding);
   }
 
+  private void createBlocks() {
+    Block block;
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        int colorIndex = random.nextInt(blockTextures.size());
+        block = new Block(i, j, colorIndex, blockTextures.get(colorIndex), new ShapeRenderer(), this);
+        group.addActor(block);
+      }
+    }
+    childrenLeft = 16;
+  }
+
   // DragController.
   @Override
   public void onDragStart(Block block) {
-    currentSelection = new ArrayList<Block>();
-    currentSelection.add(block);
+    selection = new BlockSelection();
+    selection.addBlock(block);
     block.setSelected(true);
-    System.out.println("onDragStart(" + block.getLogicX() + ", " + block.getLogicY() + ")");
   }
 
   @Override
   public void onDragEnter(Block block) {
-    currentSelection.add(block);
-    block.setSelected(true);
-    System.out.println("onDragEnter(" + block.getLogicX() + ", " + block.getLogicY() + ")");
+    if (selection.canAdd(block)) {
+      selection.addBlock(block);
+      block.setSelected(true);
+    }
   }
 
   @Override
   public void onDragEnd(Block block) {
-    for (Block b : currentSelection) {
+    for (Block b : selection.getBlocks()) {
       b.setSelected(false);
+      b.die();
     }
-    System.out.println("onDragEnd(" + block.getLogicX() + ", " + block.getLogicY() + ")");
+    selection = null;
+  }
+
+  @Override
+  public void onDead() {
+    // We use a variable to keep track of this because we get notified before
+    // the child is removed.
+    childrenLeft--;
+    if (childrenLeft == 0) {
+      createBlocks();
+    }
   }
 }
