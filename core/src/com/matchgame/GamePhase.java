@@ -3,14 +3,16 @@ package com.matchgame;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 
-public class BlockGrid implements Block.Delegate {
+public class GamePhase implements Block.Delegate {
   private final Group group;
   private BlockSelection selection = null;
   private int childrenLeft = 0;
   private final BlockFactory blockFactory;
+  private final Stage stage;
 
-  public BlockGrid(BlockFactory blockFactory, Stage stage) {
+  public GamePhase(BlockFactory blockFactory, Stage stage) {
     this.blockFactory = blockFactory;
+    this.stage = stage;
 
     group = new Group();
     createBlocks();
@@ -23,6 +25,14 @@ public class BlockGrid implements Block.Delegate {
     float hpadding = (stageWidth - groupWidth) / 2;
     float vpadding = (stageHeight - groupHeight) / 2;
     group.setPosition(hpadding, vpadding);
+  }
+
+  public boolean act(float delta) {
+    stage.act(delta);
+    if (childrenLeft == 0) {
+      createBlocks();
+    }
+    return true;
   }
 
   private void createBlocks() {
@@ -71,8 +81,5 @@ public class BlockGrid implements Block.Delegate {
     // We use a variable to keep track of this because we get notified before
     // the child is removed.
     childrenLeft--;
-    if (childrenLeft == 0) {
-      createBlocks();
-    }
   }
 }

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
@@ -16,6 +18,8 @@ public class MatchGame extends ApplicationAdapter {
 	SpriteBatch batch;
   private Stage stage;
   private final List<Texture> blockTextures = new ArrayList<Texture>();
+  private GamePhase gamePhase;
+  private DefaultBlockFactory blockFactory;
 
 	@Override
 	public void create () {
@@ -23,9 +27,10 @@ public class MatchGame extends ApplicationAdapter {
 		for (int i = 0; i < 4; i++) {
 		  blockTextures.add(new Texture("Block" + (i + 1) + ".png"));
 		}
+		blockFactory = new DefaultBlockFactory(new Random(), blockTextures);
 		stage = new Stage(new ScreenViewport());
 		Gdx.input.setInputProcessor(stage);
-    new BlockGrid(new DefaultBlockFactory(new Random(), blockTextures), stage);
+    gamePhase = new GamePhase(blockFactory, stage);
 	}
 
 	@Override
@@ -34,7 +39,9 @@ public class MatchGame extends ApplicationAdapter {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
     Gdx.gl.glEnable(GL20.GL_BLEND);
     Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		stage.act(Gdx.graphics.getDeltaTime());
+		if (!gamePhase.act(Gdx.graphics.getDeltaTime())) {
+		  throw new NotImplementedException();
+		};
 		stage.draw();
 	}
 
