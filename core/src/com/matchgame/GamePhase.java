@@ -3,7 +3,7 @@ package com.matchgame;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 
-public class GamePhase implements Block.Delegate {
+public class GamePhase implements Block.Delegate, Phase {
   private final Group group;
   private BlockSelection selection = null;
   private int childrenLeft = 0;
@@ -13,8 +13,11 @@ public class GamePhase implements Block.Delegate {
   public GamePhase(BlockFactory blockFactory, Stage stage) {
     this.blockFactory = blockFactory;
     this.stage = stage;
-
     group = new Group();
+  }
+
+  @Override
+  public void enter() {
     createBlocks();
     stage.addActor(group);
 
@@ -24,6 +27,12 @@ public class GamePhase implements Block.Delegate {
     Util.centerActorInStage(group, stage);
   }
 
+  @Override
+  public void exit() {
+    stage.clear();
+  }
+
+  @Override
   public boolean act(float delta) {
     stage.act(delta);
     if (childrenLeft == 0) {

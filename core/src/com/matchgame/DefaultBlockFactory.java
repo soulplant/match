@@ -5,6 +5,7 @@ import java.util.Random;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.matchgame.Block.Delegate;
 
 public class DefaultBlockFactory implements BlockFactory {
   private final Random random;
@@ -18,8 +19,13 @@ public class DefaultBlockFactory implements BlockFactory {
   @Override
   public Block createBlock(int x, int y, Block.Delegate delegate) {
     int colorIndex = random.nextInt(textures.size());
-    Block block = new Block(x, y, colorIndex, textures.get(colorIndex),
+    return createColoredBlock(x, y, colorIndex, delegate);
+  }
+
+  @Override
+  public Block createColoredBlock(int x, int y, int colorIndex,
+      Delegate delegate) {
+    return new Block(x, y, colorIndex, textures.get(colorIndex),
         new ShapeRenderer(), delegate);
-    return block;
   }
 }
