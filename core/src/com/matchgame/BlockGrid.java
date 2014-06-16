@@ -22,14 +22,14 @@ public class BlockGrid implements Block.Delegate {
     group = new Group();
     createBlocks();
     stage.addActor(group);
+
     float groupWidth = group.getChildren().get(0).getWidth() * 4f;
     float groupHeight = group.getChildren().get(0).getHeight() * 4f;
-
     float stageWidth = stage.getWidth();
     float stageHeight = stage.getHeight();
-
-    float padding = (stageWidth - groupWidth) / 2;
-    group.setPosition(padding, stageHeight - groupHeight - padding);
+    float hpadding = (stageWidth - groupWidth) / 2;
+    float vpadding = (stageHeight - groupHeight) / 2;
+    group.setPosition(hpadding, vpadding);
   }
 
   private void createBlocks() {
@@ -72,7 +72,6 @@ public class BlockGrid implements Block.Delegate {
   @Override
   public void onDragEnd(Block block) {
     for (Block b : selection.getBlocks()) {
-      b.setSelected(false);
       b.die();
     }
     selection = null;

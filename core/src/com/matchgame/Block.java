@@ -103,6 +103,7 @@ class Block extends Actor {
   }
 
   public void die() {
+    setSelected(false);
     setZIndex(17);
     setTouchable(Touchable.disabled);
     addAction(Actions.sequence(
