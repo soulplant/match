@@ -15,11 +15,18 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class MatchGame extends ApplicationAdapter {
+  enum State {
+    INTRO,
+    GAME,
+  }
+
 	SpriteBatch batch;
   private Stage stage;
   private final List<Texture> blockTextures = new ArrayList<Texture>();
+  private IntroPhase introPhase;
   private GamePhase gamePhase;
   private DefaultBlockFactory blockFactory;
+  State state = State.INTRO;
 
 	@Override
 	public void create () {
@@ -30,7 +37,7 @@ public class MatchGame extends ApplicationAdapter {
 		blockFactory = new DefaultBlockFactory(new Random(), blockTextures);
 		stage = new Stage(new ScreenViewport());
 		Gdx.input.setInputProcessor(stage);
-    gamePhase = new GamePhase(blockFactory, stage);
+		introPhase = new IntroPhase(blockFactory, stage);
 	}
 
 	@Override
@@ -39,13 +46,28 @@ public class MatchGame extends ApplicationAdapter {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
     Gdx.gl.glEnable(GL20.GL_BLEND);
     Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		if (!gamePhase.act(Gdx.graphics.getDeltaTime())) {
-		  throw new NotImplementedException();
-		};
+    act(Gdx.graphics.getDeltaTime());
 		stage.draw();
 	}
 
-	@Override
+	private boolean act(float delta) {
+	  switch (state) {
+    case GAME:
+      if (!gamePhase.act(delta)) {
+        throw new NotImplementedException();
+      }
+      break;
+    case INTRO:
+      if (!introPhase.act(delta)) {
+        state = State.GAME;
+        gamePhase = new GamePhase(blockFactory, stage);
+      }
+      break;
+	  }
+    return true;
+  }
+
+  @Override
 	public void dispose() {
 	  stage.dispose();
 	}
