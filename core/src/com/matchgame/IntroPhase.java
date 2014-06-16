@@ -24,6 +24,7 @@ public class IntroPhase implements Block.Delegate, Phase {
   @Override
   public void enter() {
     currentVisibleBlock = 0;
+    // TODO(koz): Don't use a magic number here.
     for (int i = 0; i < 4; i++) {
       Block block = blockFactory.createColoredBlock(0, 0, i, this);
       blocks.add(block);
@@ -62,8 +63,8 @@ public class IntroPhase implements Block.Delegate, Phase {
 
   @Override
   public void onDragStart(Block block) {
+    stage.getRoot().removeAction(cycleAction);
     block.setSelected(true);
-    cycleAction.setCount(0);
   }
 
   @Override
