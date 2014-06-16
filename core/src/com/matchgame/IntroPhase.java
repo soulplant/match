@@ -14,7 +14,6 @@ public class IntroPhase implements Block.Delegate, Phase {
   private boolean done = false;
   private final List<Block> blocks = new ArrayList<Block>();
   private int currentVisibleBlock;
-  private RepeatAction cycleAction;
 
   public IntroPhase(BlockFactory blockFactory, Stage stage) {
     this.blockFactory = blockFactory;
@@ -32,14 +31,13 @@ public class IntroPhase implements Block.Delegate, Phase {
       Util.centerActorInStage(block, stage);
       block.setVisible(currentVisibleBlock == i);
     }
-    cycleAction = Actions.forever(Actions.delay(0.075f, new Action() {
+    stage.addAction(Actions.forever(Actions.delay(0.075f, new Action() {
       @Override
       public boolean act(float delta) {
         showNextColorBlock();
         return true;
       }
-    }));
-    stage.addAction(cycleAction);
+    })));
   }
 
   private void showNextColorBlock() {
@@ -63,7 +61,7 @@ public class IntroPhase implements Block.Delegate, Phase {
 
   @Override
   public void onDragStart(Block block) {
-    stage.getRoot().removeAction(cycleAction);
+    stage.getRoot().clearActions();
     block.setSelected(true);
   }
 
