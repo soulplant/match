@@ -134,4 +134,18 @@ class Block extends Actor {
   public boolean isAtSamePosition(Block block) {
     return getLogicalX() == block.getLogicalX() && getLogicalY() == block.getLogicalY();
   }
+
+  @Override
+  public boolean equals(Object other) {
+    if (other != null && other instanceof Block) {
+      Block b = (Block) other;
+      return x == b.x && y == b.y && colorIndex == b.colorIndex;
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return y * 31 + x;
+  }
 }

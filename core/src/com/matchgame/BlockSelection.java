@@ -41,4 +41,8 @@ public class BlockSelection {
   public List<Block> getBlocks() {
     return Collections.unmodifiableList(blocks);
   }
+
+  public int size() {
+    return blocks.size();
+  }
 }

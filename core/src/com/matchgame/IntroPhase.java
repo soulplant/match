@@ -6,7 +6,6 @@ import java.util.List;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.actions.RepeatAction;
 
 public class IntroPhase implements Block.Delegate, Phase {
   private final BlockFactory blockFactory;
@@ -23,6 +22,7 @@ public class IntroPhase implements Block.Delegate, Phase {
   @Override
   public void enter() {
     currentVisibleBlock = 0;
+    done = false;
     // TODO(koz): Don't use a magic number here.
     for (int i = 0; i < 4; i++) {
       Block block = blockFactory.createColoredBlock(0, 0, i, this);
@@ -40,17 +40,17 @@ public class IntroPhase implements Block.Delegate, Phase {
     })));
   }
 
+  @Override
+  public void exit() {
+    stage.clear();
+    blocks.clear();
+  }
+
   private void showNextColorBlock() {
     Block block = blocks.get(currentVisibleBlock);
     block.setVisible(false);
     currentVisibleBlock = (currentVisibleBlock + 1) % blocks.size();
     blocks.get(currentVisibleBlock).setVisible(true);
-  }
-
-  @Override
-  public void exit() {
-    stage.clear();
-    blocks.clear();
   }
 
   @Override
