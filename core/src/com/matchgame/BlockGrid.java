@@ -1,23 +1,16 @@
 package com.matchgame;
 
-import java.util.List;
-import java.util.Random;
-
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 
 public class BlockGrid implements Block.Delegate {
   private final Group group;
   private BlockSelection selection = null;
-  private final Random random;
-  private final List<Texture> blockTextures;
   private int childrenLeft = 0;
+  private final BlockFactory blockFactory;
 
-  public BlockGrid(List<Texture> blockTextures, Stage stage) {
-    this.blockTextures = blockTextures;
-    random = new Random();
+  public BlockGrid(BlockFactory blockFactory, Stage stage) {
+    this.blockFactory = blockFactory;
 
     group = new Group();
     createBlocks();
@@ -33,13 +26,9 @@ public class BlockGrid implements Block.Delegate {
   }
 
   private void createBlocks() {
-    Block block;
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
-        int colorIndex = random.nextInt(blockTextures.size());
-        block = new Block(i, j, colorIndex, blockTextures.get(colorIndex),
-            new ShapeRenderer(), this);
-        group.addActor(block);
+        group.addActor(blockFactory.createBlock(i, j, this));
       }
     }
     childrenLeft = 16;

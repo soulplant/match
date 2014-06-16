@@ -2,6 +2,7 @@ package com.matchgame;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -24,7 +25,7 @@ public class MatchGame extends ApplicationAdapter {
 		}
 		stage = new Stage(new ScreenViewport());
 		Gdx.input.setInputProcessor(stage);
-		new BlockGrid(blockTextures, stage);
+    new BlockGrid(new DefaultBlockFactory(new Random(), blockTextures), stage);
 	}
 
 	@Override
