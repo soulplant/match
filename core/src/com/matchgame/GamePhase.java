@@ -172,7 +172,7 @@ public class GamePhase implements Block.Delegate, Phase {
   private Block getBlockAt(int x, int y) {
     for (Actor actor : group.getChildren()) {
       Block block = (Block) actor;
-      if (block.getLogicalX() == x && block.getLogicalY() == y) {
+      if (block.getLogicalX() == x && block.getLogicalY() == y && !block.isDying()) {
         return block;
       }
     }

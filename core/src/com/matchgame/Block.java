@@ -22,6 +22,7 @@ class Block extends Actor {
   private boolean isSelected;
   private ShapeRenderer renderer;
   private final int colorIndex;
+  private boolean isDying;
 
   public interface Delegate {
     void onDragStart(Block block);
@@ -106,6 +107,7 @@ class Block extends Actor {
   }
 
   public void die() {
+    isDying = true;
     setSelected(false);
     setZIndex(17);
     setTouchable(Touchable.disabled);
@@ -147,5 +149,9 @@ class Block extends Actor {
   @Override
   public int hashCode() {
     return y * 31 + x;
+  }
+
+  public boolean isDying() {
+    return isDying;
   }
 }
