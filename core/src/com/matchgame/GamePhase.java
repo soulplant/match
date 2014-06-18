@@ -7,6 +7,7 @@ import java.util.Queue;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -20,39 +21,51 @@ public class GamePhase implements Block.Delegate, Phase {
   private final BlockFactory blockFactory;
   private final Stage stage;
   private boolean invalidSelectionMade;
-  private final LabelStyle labelStyle;
-  private Label label;
+  private Label scoreLabel;
   private int score = 0;
+  private Timer timer;
+  private final BitmapFont font;
 
   public GamePhase(BlockFactory blockFactory, Stage stage) {
     this.blockFactory = blockFactory;
     this.stage = stage;
     group = new Group();
 
-    labelStyle = new LabelStyle();
-    labelStyle.font = new BitmapFont();
-    labelStyle.font.setScale(10f, 10f);
-    labelStyle.fontColor = new Color(0, 0, 0, 1);
+    font = new BitmapFont();
+    font.setScale(10f, 10f);
   }
 
   @Override
   public void enter() {
+
     score = 0;
     selection = null;
     invalidSelectionMade = false;
     createBlocks();
     stage.addActor(group);
 
-    label = new Label(score + "", labelStyle);
-    stage.addActor(label);
+    LabelStyle labelStyle = new LabelStyle();
+    labelStyle.font = font;
+    labelStyle.fontColor = new Color(0, 0, 0, 1);
+    scoreLabel = new Label("0", labelStyle);
+    stage.addActor(scoreLabel);
 
-    Util.centerActorInStage(label, stage);
-    label.setPosition(label.getX(), stage.getHeight() - label.getHeight() - 200f);
+    System.out.println("label width = " + scoreLabel.getWidth());
+
+    TextBounds bounds = font.getBounds("60.00");
+    scoreLabel.setSize(bounds.width, bounds.height);
+    scoreLabel.setPosition(stage.getWidth() - bounds.width - 200f, stage.getHeight() - bounds.height - 200f);
+
+    timer = new Timer(font);
+    System.out.println("timer width = " + timer.getWidth());
+    stage.addActor(timer);
+    timer.setPosition(200, stage.getHeight() - bounds.height - 200f);
 
     float groupWidth = group.getChildren().get(0).getWidth() * 4f;
     float groupHeight = group.getChildren().get(0).getHeight() * 4f;
     group.setSize(groupWidth, groupHeight);
     Util.centerActorInStage(group, stage);
+    updateScoreText();
   }
 
   @Override
@@ -65,6 +78,9 @@ public class GamePhase implements Block.Delegate, Phase {
   public boolean act(float delta) {
     stage.act(delta);
     if (invalidSelectionMade) {
+      return false;
+    }
+    if (timer.isDone()) {
       return false;
     }
     if (childrenLeft == 0) {
@@ -116,8 +132,13 @@ public class GamePhase implements Block.Delegate, Phase {
       b.die();
       score++;
     }
-    label.setText(score + "");
+
+    updateScoreText();
     selection = null;
+  }
+
+  private void updateScoreText() {
+    scoreLabel.setText(score + "");
   }
 
   private boolean isValidSelection(BlockSelection selection) {
