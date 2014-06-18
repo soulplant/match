@@ -5,9 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 
 public class GamePhase implements Block.Delegate, Phase {
   private final Group group;
@@ -16,19 +20,34 @@ public class GamePhase implements Block.Delegate, Phase {
   private final BlockFactory blockFactory;
   private final Stage stage;
   private boolean invalidSelectionMade;
+  private final LabelStyle labelStyle;
+  private Label label;
+  private int score = 0;
 
   public GamePhase(BlockFactory blockFactory, Stage stage) {
     this.blockFactory = blockFactory;
     this.stage = stage;
     group = new Group();
+
+    labelStyle = new LabelStyle();
+    labelStyle.font = new BitmapFont();
+    labelStyle.font.setScale(10f, 10f);
+    labelStyle.fontColor = new Color(0, 0, 0, 1);
   }
 
   @Override
   public void enter() {
+    score = 0;
     selection = null;
     invalidSelectionMade = false;
     createBlocks();
     stage.addActor(group);
+
+    label = new Label(score + "", labelStyle);
+    stage.addActor(label);
+
+    Util.centerActorInStage(label, stage);
+    label.setPosition(label.getX(), stage.getHeight() - label.getHeight() - 200f);
 
     float groupWidth = group.getChildren().get(0).getWidth() * 4f;
     float groupHeight = group.getChildren().get(0).getHeight() * 4f;
@@ -95,7 +114,9 @@ public class GamePhase implements Block.Delegate, Phase {
     }
     for (Block b : selection.getBlocks()) {
       b.die();
+      score++;
     }
+    label.setText(score + "");
     selection = null;
   }
 
