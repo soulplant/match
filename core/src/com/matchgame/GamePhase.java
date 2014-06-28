@@ -26,18 +26,15 @@ public class GamePhase implements Block.Delegate, Phase {
   private Timer timer;
   private final BitmapFont font;
 
-  public GamePhase(BlockFactory blockFactory, Stage stage) {
+  public GamePhase(BlockFactory blockFactory, Stage stage, BitmapFont font) {
     this.blockFactory = blockFactory;
     this.stage = stage;
+    this.font = font;
     group = new Group();
-
-    font = new BitmapFont();
-    font.setScale(10f, 10f);
   }
 
   @Override
   public void enter() {
-
     score = 0;
     selection = null;
     invalidSelectionMade = false;

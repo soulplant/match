@@ -8,7 +8,9 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
@@ -19,8 +21,12 @@ public class MatchGame extends ApplicationAdapter {
   private DefaultBlockFactory blockFactory;
   private CyclicPhaseRunner runner;
 
-	@Override
+	@SuppressWarnings("deprecation")
+  @Override
 	public void create () {
+	  FreeTypeFontGenerator gen = new FreeTypeFontGenerator(Gdx.files.internal("JosefinSlab-Regular.ttf"));
+	  BitmapFont font = gen.generateFont(100);
+	  gen.dispose();
 		batch = new SpriteBatch();
 		for (int i = 0; i < 4; i++) {
 		  blockTextures.add(new Texture("Block" + (i + 1) + ".png"));
@@ -30,7 +36,7 @@ public class MatchGame extends ApplicationAdapter {
 		Gdx.input.setInputProcessor(stage);
 		List<Phase> phases = new ArrayList<Phase>();
 		phases.add(new IntroPhase(blockFactory, stage));
-		phases.add(new GamePhase(blockFactory, stage));
+		phases.add(new GamePhase(blockFactory, stage, font));
 		runner = new CyclicPhaseRunner(phases);
 	}
 
