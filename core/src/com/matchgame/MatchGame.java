@@ -28,7 +28,11 @@ public class MatchGame extends ApplicationAdapter {
         Gdx.files.internal("JosefinSlab-Regular.ttf"));
     FreeTypeFontParameter param = new FreeTypeFontParameter();
     param.size = 150;
-    BitmapFont font = gen.generateFont(param);
+    BitmapFont mediumFont = gen.generateFont(param);
+    param.size = 250;
+    BitmapFont largeFont = gen.generateFont(param);
+    param.size = 100;
+    BitmapFont smallFont = gen.generateFont(param);
     gen.dispose();
     batch = new SpriteBatch();
     for (int i = 0; i < 4; i++) {
@@ -38,8 +42,8 @@ public class MatchGame extends ApplicationAdapter {
     stage = new Stage(new ScreenViewport());
     Gdx.input.setInputProcessor(stage);
     List<Phase> phases = new ArrayList<Phase>();
-    phases.add(new IntroPhase(blockFactory, stage));
-    phases.add(new GamePhase(blockFactory, stage, font));
+    phases.add(new IntroPhase(blockFactory, stage, largeFont, smallFont));
+    phases.add(new GamePhase(blockFactory, stage, mediumFont));
     runner = new CyclicPhaseRunner(phases);
   }
 

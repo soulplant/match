@@ -3,9 +3,13 @@ package com.matchgame;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 
 public class IntroPhase implements Block.Delegate, Phase {
   private final BlockFactory blockFactory;
@@ -13,10 +17,15 @@ public class IntroPhase implements Block.Delegate, Phase {
   private boolean done = false;
   private final List<Block> blocks = new ArrayList<Block>();
   private int currentVisibleBlock;
+  private final BitmapFont smallFont;
+  private final BitmapFont largeFont;
 
-  public IntroPhase(BlockFactory blockFactory, Stage stage) {
+  public IntroPhase(BlockFactory blockFactory, Stage stage,
+      BitmapFont largeFont, BitmapFont smallFont) {
     this.blockFactory = blockFactory;
     this.stage = stage;
+    this.largeFont = largeFont;
+    this.smallFont = smallFont;
   }
 
   @Override
@@ -31,6 +40,21 @@ public class IntroPhase implements Block.Delegate, Phase {
       Util.centerActorInStage(block, stage);
       block.setVisible(currentVisibleBlock == i);
     }
+
+    // Button label.
+    Label buttonLabel = new Label("Play", new LabelStyle(smallFont, Color.BLACK));
+    float bottom = blocks.get(0).getY();
+    float padding = 40;
+    Util.centerActorInStage(buttonLabel, stage);
+    buttonLabel.setY(bottom - buttonLabel.getHeight() - padding);
+    stage.addActor(buttonLabel);
+
+    // Title label.
+    Label titleLabel = new Label("Match", new LabelStyle(largeFont, Color.BLACK));
+    Util.centerActorInStage(titleLabel, stage);
+    titleLabel.setY(stage.getHeight() - titleLabel.getHeight() - 4 * padding);
+    stage.addActor(titleLabel);
+
     stage.addAction(Actions.forever(Actions.delay(0.075f, new Action() {
       @Override
       public boolean act(float delta) {
