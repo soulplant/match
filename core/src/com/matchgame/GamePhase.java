@@ -7,7 +7,6 @@ import java.util.Queue;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -15,7 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 
 public class GamePhase implements Block.Delegate, Phase {
-  private final Group group;
+  private final Group blockGroup;
   private BlockSelection selection = null;
   private int childrenLeft = 0;
   private final BlockFactory blockFactory;
@@ -30,7 +29,7 @@ public class GamePhase implements Block.Delegate, Phase {
     this.blockFactory = blockFactory;
     this.stage = stage;
     this.font = font;
-    group = new Group();
+    blockGroup = new Group();
   }
 
   @Override
@@ -39,36 +38,30 @@ public class GamePhase implements Block.Delegate, Phase {
     selection = null;
     invalidSelectionMade = false;
     createBlocks();
-    stage.addActor(group);
+    float groupWidth = blockGroup.getChildren().get(0).getWidth() * 4f;
+    float groupHeight = blockGroup.getChildren().get(0).getHeight() * 4f;
+    blockGroup.setSize(groupWidth, groupHeight);
+    Util.centerActorInStage(blockGroup, stage);
+    stage.addActor(blockGroup);
 
     LabelStyle labelStyle = new LabelStyle();
     labelStyle.font = font;
-    labelStyle.fontColor = new Color(0, 0, 0, 1);
-    scoreLabel = new Label("0", labelStyle);
+    labelStyle.fontColor = Color.BLACK;
+    scoreLabel = new Label("60.0", labelStyle);
     stage.addActor(scoreLabel);
-
-    System.out.println("label width = " + scoreLabel.getWidth());
-
-    TextBounds bounds = font.getBounds("60.00");
-    scoreLabel.setSize(bounds.width, bounds.height);
-    scoreLabel.setPosition(stage.getWidth() - bounds.width - 200f, stage.getHeight() - bounds.height - 200f);
+    scoreLabel.setPosition(blockGroup.getRight() - scoreLabel.getWidth(),
+        stage.getHeight() - scoreLabel.getHeight() - 200f);
 
     timer = new Timer(font);
-    System.out.println("timer width = " + timer.getWidth());
     stage.addActor(timer);
-    timer.setPosition(200, stage.getHeight() - bounds.height - 200f);
-
-    float groupWidth = group.getChildren().get(0).getWidth() * 4f;
-    float groupHeight = group.getChildren().get(0).getHeight() * 4f;
-    group.setSize(groupWidth, groupHeight);
-    Util.centerActorInStage(group, stage);
+    timer.setPosition(blockGroup.getX(), stage.getHeight() - scoreLabel.getHeight() - 200f);
     updateScoreText();
   }
 
   @Override
   public void exit() {
     stage.clear();
-    group.clear();
+    blockGroup.clear();
   }
 
   @Override
@@ -89,7 +82,7 @@ public class GamePhase implements Block.Delegate, Phase {
   private void createBlocks() {
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
-        group.addActor(blockFactory.createBlock(i, j, this));
+        blockGroup.addActor(blockFactory.createBlock(i, j, this));
       }
     }
     childrenLeft = 16;
@@ -209,7 +202,7 @@ public class GamePhase implements Block.Delegate, Phase {
   }
 
   private Block getBlockAt(int x, int y) {
-    for (Actor actor : group.getChildren()) {
+    for (Actor actor : blockGroup.getChildren()) {
       Block block = (Block) actor;
       if (block.getLogicalX() == x && block.getLogicalY() == y && !block.isDying()) {
         return block;

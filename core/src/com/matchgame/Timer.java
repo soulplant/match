@@ -13,7 +13,7 @@ public class Timer extends Group {
   public Timer(BitmapFont font) {
     LabelStyle style = new LabelStyle();
     style.font = font;
-    style.fontColor = new Color(0, 0, 0, 1);
+    style.fontColor = Color.BLACK;
     label = new Label("60.00", style);
     setSize(label.getWidth(), label.getHeight());
     label.setStyle(style);
