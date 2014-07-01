@@ -1,5 +1,6 @@
 package com.matchgame;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -23,6 +24,7 @@ class Block extends Actor {
   private ShapeRenderer renderer;
   private final int colorIndex;
   private boolean isDying;
+  private boolean isIndicating;
 
   public interface Delegate {
     void onDragStart(Block block);
@@ -90,9 +92,18 @@ class Block extends Actor {
     if (isSelected()) {
       batch.end();
       renderer.setTransformMatrix(batch.getTransformMatrix());
-      renderer.setColor(getColor());
+      renderer.setColor(Color.WHITE);
       renderer.begin(ShapeType.Filled);
-      renderer.ellipse(x * w + w / 4f, y * h + h / 4f, w / 2f, h / 2f);
+      renderer.ellipse(x * w + w / 4f, y * h + h / 4f, 2 * w / 4f, 2 * h / 4f);
+      renderer.end();
+      batch.begin();
+    }
+    if (isIndicating()) {
+      batch.end();
+      renderer.setTransformMatrix(batch.getTransformMatrix());
+      renderer.setColor(Color.ORANGE);
+      renderer.begin(ShapeType.Filled);
+      renderer.ellipse(x * w + w / 3f, y * h + h / 3f, 1 * w / 3f, 1 * h / 3f);
       renderer.end();
       batch.begin();
     }
@@ -102,8 +113,16 @@ class Block extends Actor {
     return isSelected;
   }
 
+  private boolean isIndicating() {
+    return isIndicating;
+  }
+
   public void setSelected(boolean selected) {
     isSelected = selected;
+  }
+
+  public void setIndicating(boolean indicating) {
+    isIndicating = indicating;
   }
 
   public void die() {

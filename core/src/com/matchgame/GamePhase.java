@@ -7,9 +7,11 @@ import java.util.Queue;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 
@@ -19,11 +21,12 @@ public class GamePhase implements Block.Delegate, Phase {
   private int childrenLeft = 0;
   private final BlockFactory blockFactory;
   private final Stage stage;
-  private boolean invalidSelectionMade;
+  private List<Block> longerSelection = null;
   private Label scoreLabel;
   private int score = 0;
   private Timer timer;
   private final BitmapFont font;
+  private boolean isDone = false;
 
   public GamePhase(BlockFactory blockFactory, Stage stage, BitmapFont font) {
     this.blockFactory = blockFactory;
@@ -36,7 +39,8 @@ public class GamePhase implements Block.Delegate, Phase {
   public void enter() {
     score = 0;
     selection = null;
-    invalidSelectionMade = false;
+    longerSelection = null;
+    isDone = false;
     createBlocks();
     float groupWidth = blockGroup.getChildren().get(0).getWidth() * 4f;
     float groupHeight = blockGroup.getChildren().get(0).getHeight() * 4f;
@@ -56,6 +60,37 @@ public class GamePhase implements Block.Delegate, Phase {
     stage.addActor(timer);
     timer.setPosition(blockGroup.getX(), stage.getHeight() - scoreLabel.getHeight() - 200f);
     updateScoreText();
+
+    final Action done = new Action() {
+      @Override
+      public boolean act(float delta) {
+        isDone = true;
+        return true;
+      }
+    };
+    final Action pause = Actions.delay(3f);
+
+    Action play = new Action() {
+      @Override
+      public boolean act(float delta) {
+        if (longerSelection != null) {
+          for (Block block : longerSelection) {
+            block.setIndicating(true);
+            stage.addAction(Actions.sequence(pause, done));
+          }
+          return true;
+        }
+        if (timer.isDone()) {
+          stage.addAction(Actions.sequence(pause, done));
+          return true;
+        }
+        if (childrenLeft == 0) {
+          createBlocks();
+        }
+        return false;
+      }
+    };
+    stage.addAction(play);
   }
 
   @Override
@@ -67,16 +102,7 @@ public class GamePhase implements Block.Delegate, Phase {
   @Override
   public boolean act(float delta) {
     stage.act(delta);
-    if (invalidSelectionMade) {
-      return false;
-    }
-    if (timer.isDone()) {
-      return false;
-    }
-    if (childrenLeft == 0) {
-      createBlocks();
-    }
-    return true;
+    return !isDone;
   }
 
   private void createBlocks() {
@@ -114,8 +140,8 @@ public class GamePhase implements Block.Delegate, Phase {
 
   @Override
   public void onDragEnd(Block block) {
-    if (!isValidSelection(selection)) {
-      invalidSelectionMade = true;
+    longerSelection = getLongerSelection(selection);
+    if (longerSelection != null) {
       return;
     }
     for (Block b : selection.getBlocks()) {
@@ -131,7 +157,7 @@ public class GamePhase implements Block.Delegate, Phase {
     scoreLabel.setText(score + "");
   }
 
-  private boolean isValidSelection(BlockSelection selection) {
+  private List<Block> getLongerSelection(BlockSelection selection) {
     List<Block> longest = null;
     List<Block> allTouching = getAllTouching(selection.getBlocks().get(0));
     for (Block b : allTouching) {
@@ -140,7 +166,10 @@ public class GamePhase implements Block.Delegate, Phase {
         longest = candidate;
       }
     }
-    return selection.size() == longest.size();
+    if (selection.size() == longest.size()) {
+      return null;
+    }
+    return longest;
   }
 
   private List<Block> getLongestPathFrom(Block startingBlock) {

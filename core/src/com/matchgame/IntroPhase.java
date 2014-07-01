@@ -52,7 +52,7 @@ public class IntroPhase implements Block.Delegate, Phase {
     // Title label.
     Label titleLabel = new Label("Match", new LabelStyle(largeFont, Color.BLACK));
     Util.centerActorInStage(titleLabel, stage);
-    titleLabel.setY(stage.getHeight() - titleLabel.getHeight() - 4 * padding);
+    titleLabel.setY(stage.getHeight() - titleLabel.getHeight() - 5 * padding);
     stage.addActor(titleLabel);
 
     stage.addAction(Actions.forever(Actions.delay(0.075f, new Action() {
