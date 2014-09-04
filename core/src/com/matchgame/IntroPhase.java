@@ -2,7 +2,9 @@ package com.matchgame;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Action;
@@ -19,13 +21,15 @@ public class IntroPhase implements Block.Delegate, Phase {
   private int currentVisibleBlock;
   private final BitmapFont smallFont;
   private final BitmapFont largeFont;
+  private Map<String, Sound> sounds;
 
   public IntroPhase(BlockFactory blockFactory, Stage stage,
-      BitmapFont largeFont, BitmapFont smallFont) {
+      BitmapFont largeFont, BitmapFont smallFont, Map<String, Sound> sounds) {
     this.blockFactory = blockFactory;
     this.stage = stage;
     this.largeFont = largeFont;
     this.smallFont = smallFont;
+    this.sounds = sounds;
   }
 
   @Override
@@ -97,6 +101,7 @@ public class IntroPhase implements Block.Delegate, Phase {
   @Override
   public void onDragEnd(Block block) {
     block.die();
+    sounds.get("c").play();
   }
 
   @Override

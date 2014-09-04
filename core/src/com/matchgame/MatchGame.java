@@ -1,11 +1,14 @@
 package com.matchgame;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -13,6 +16,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.Timer;
+import com.badlogic.gdx.utils.Timer.Task;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class MatchGame extends ApplicationAdapter {
@@ -21,9 +26,14 @@ public class MatchGame extends ApplicationAdapter {
   private final List<Texture> blockTextures = new ArrayList<Texture>();
   private DefaultBlockFactory blockFactory;
   private CyclicPhaseRunner runner;
+  private Map<String, Sound> sounds = new HashMap<String, Sound>();
 
   @Override
   public void create() {
+    for (String note : Constants.noteSoundNames) {
+      loadSound(note);
+    }
+    loadSound(Constants.failSoundName);
     FreeTypeFontGenerator gen = new FreeTypeFontGenerator(
         Gdx.files.internal("JosefinSlab-Regular.ttf"));
     FreeTypeFontParameter param = new FreeTypeFontParameter();
@@ -42,9 +52,24 @@ public class MatchGame extends ApplicationAdapter {
     stage = new Stage(new ScreenViewport());
     Gdx.input.setInputProcessor(stage);
     List<Phase> phases = new ArrayList<Phase>();
-    phases.add(new IntroPhase(blockFactory, stage, largeFont, smallFont));
-    phases.add(new GamePhase(blockFactory, stage, mediumFont));
+    phases.add(new IntroPhase(blockFactory, stage, largeFont, smallFont, sounds));
+    phases.add(new GamePhase(blockFactory, stage, mediumFont, sounds));
     runner = new CyclicPhaseRunner(phases);
+  }
+
+  private void loadSound(String note) {
+    sounds.put(note, Gdx.audio.newSound(Gdx.files.internal(note + ".wav")));
+  }
+
+  private void scheduleSound(final Sound sound, float delay) {
+    new Timer().scheduleTask(new Task() {
+      @Override
+      public void run() {
+        System.out.println("about to play");
+        long play = sound.play();
+        System.out.println("play() result = " + play);
+      }
+    }, delay);
   }
 
   @Override

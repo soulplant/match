@@ -3,8 +3,10 @@ package com.matchgame;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Action;
@@ -27,11 +29,14 @@ public class GamePhase implements Block.Delegate, Phase {
   private Timer timer;
   private final BitmapFont font;
   private boolean isDone = false;
+  private Map<String, Sound> sounds;
 
-  public GamePhase(BlockFactory blockFactory, Stage stage, BitmapFont font) {
+  public GamePhase(BlockFactory blockFactory, Stage stage, BitmapFont font,
+      Map<String, Sound> sounds) {
     this.blockFactory = blockFactory;
     this.stage = stage;
     this.font = font;
+    this.sounds = sounds;
     blockGroup = new Group();
   }
 
@@ -78,6 +83,7 @@ public class GamePhase implements Block.Delegate, Phase {
             block.setIndicating(true);
             stage.addAction(Actions.sequence(pause, done));
           }
+          sounds.get("fail").play();
           return true;
         }
         if (timer.isDone()) {
@@ -118,8 +124,15 @@ public class GamePhase implements Block.Delegate, Phase {
   @Override
   public void onDragStart(Block block) {
     selection = new BlockSelection();
+    addBlockToSelection(block);
+  }
+
+  private void addBlockToSelection(Block block) {
     selection.addBlock(block);
     block.setSelected(true);
+    String note = Constants.noteSoundNames[Math.min(Constants.noteSoundNames.length - 1,
+        selection.getBlocks().size() - 1)];
+    sounds.get(note).play();
   }
 
   @Override
@@ -133,8 +146,7 @@ public class GamePhase implements Block.Delegate, Phase {
       return;
     }
     if (selection.canAdd(block)) {
-      selection.addBlock(block);
-      block.setSelected(true);
+      addBlockToSelection(block);
     }
   }
 
