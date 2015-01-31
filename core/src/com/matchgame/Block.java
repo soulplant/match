@@ -34,13 +34,13 @@ class Block extends Actor {
   }
 
   public Block(int x, int y, int colorIndex, Texture blockTexture, ShapeRenderer renderer,
-      final Delegate dragController) {
+      final Delegate delegate) {
     // Logical coordinates.
     this.x = x;
     this.y = y;
     this.colorIndex = colorIndex;
     this.blockTexture = blockTexture;
-    this.delegate = dragController;
+    this.delegate = delegate;
     this.renderer = renderer;
 
     w = 200f;
@@ -55,20 +55,20 @@ class Block extends Actor {
         if (pointer != 0) {
           return false;
         }
-        dragController.onDragStart(Block.this);
+        delegate.onDragStart(Block.this);
         return true;
       }
 
       @Override
       public void touchUp(InputEvent event, float x, float y, int pointer,
           int button) {
-        dragController.onDragEnd(Block.this);
+        delegate.onDragEnd(Block.this);
       }
 
       @Override
       public void enter(InputEvent event, float x, float y, int pointer,
           Actor fromActor) {
-        dragController.onDragEnter(Block.this);
+        delegate.onDragEnter(Block.this);
       }
     });
   }

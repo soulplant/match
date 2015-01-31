@@ -1,11 +1,5 @@
 package com.matchgame;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -17,6 +11,12 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+
 public class GamePhase implements Block.Delegate, Phase {
   private final Group blockGroup;
   private BlockSelection selection = null;
@@ -26,13 +26,13 @@ public class GamePhase implements Block.Delegate, Phase {
   private List<Block> longerSelection = null;
   private Label scoreLabel;
   private int score = 0;
-  private Timer timer;
+  private LineTimer timer;
   private final BitmapFont font;
   private boolean isDone = false;
   private Map<String, Sound> sounds;
 
   public GamePhase(BlockFactory blockFactory, Stage stage, BitmapFont font,
-      Map<String, Sound> sounds) {
+                   Map<String, Sound> sounds) {
     this.blockFactory = blockFactory;
     this.stage = stage;
     this.font = font;
@@ -47,9 +47,9 @@ public class GamePhase implements Block.Delegate, Phase {
     longerSelection = null;
     isDone = false;
     createBlocks();
-    float groupWidth = blockGroup.getChildren().get(0).getWidth() * 4f;
-    float groupHeight = blockGroup.getChildren().get(0).getHeight() * 4f;
-    blockGroup.setSize(groupWidth, groupHeight);
+    float groupWidthPx = blockGroup.getChildren().get(0).getWidth() * 4f;
+    float groupHeightPx = blockGroup.getChildren().get(0).getHeight() * 4f;
+    blockGroup.setSize(groupWidthPx, groupHeightPx);
     Util.centerActorInStage(blockGroup, stage);
     stage.addActor(blockGroup);
 
@@ -61,9 +61,10 @@ public class GamePhase implements Block.Delegate, Phase {
     scoreLabel.setPosition(blockGroup.getRight() - scoreLabel.getWidth(),
         stage.getHeight() - scoreLabel.getHeight() - 200f);
 
-    timer = new Timer(font);
+    timer = new LineTimer(60f);
     stage.addActor(timer);
-    timer.setPosition(blockGroup.getX(), stage.getHeight() - scoreLabel.getHeight() - 200f);
+    timer.setPosition(blockGroup.getX(), stage.getHeight() - scoreLabel.getHeight() - 220f);
+    timer.setSize(blockGroup.getWidth(), 4f);
     updateScoreText();
 
     final Action done = new Action() {
@@ -111,28 +112,11 @@ public class GamePhase implements Block.Delegate, Phase {
     return !isDone;
   }
 
-  private void createBlocks() {
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
-        blockGroup.addActor(blockFactory.createBlock(i, j, this));
-      }
-    }
-    childrenLeft = 16;
-  }
-
   // DragController.
   @Override
   public void onDragStart(Block block) {
     selection = new BlockSelection();
     addBlockToSelection(block);
-  }
-
-  private void addBlockToSelection(Block block) {
-    selection.addBlock(block);
-    block.setSelected(true);
-    String note = Constants.noteSoundNames[Math.min(Constants.noteSoundNames.length - 1,
-        selection.getBlocks().size() - 1)];
-    sounds.get(note).play();
   }
 
   @Override
@@ -165,16 +149,40 @@ public class GamePhase implements Block.Delegate, Phase {
     selection = null;
   }
 
+  @Override
+  public void onDead() {
+    // We use a variable to keep track of this because we get notified before
+    // the child is removed.
+    childrenLeft--;
+  }
+
+  private void createBlocks() {
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        blockGroup.addActor(blockFactory.createBlock(i, j, this));
+      }
+    }
+    childrenLeft = 16;
+  }
+
+  private void addBlockToSelection(Block block) {
+    selection.addBlock(block);
+    block.setSelected(true);
+    String note = Constants.noteSoundNames[Math.min(Constants.noteSoundNames.length - 1,
+        selection.getBlocks().size() - 1)];
+    sounds.get(note).play();
+  }
+
   private void updateScoreText() {
     scoreLabel.setText(score + "");
   }
 
   private List<Block> getLongerSelection(BlockSelection selection) {
-    List<Block> longest = null;
+    List<Block> longest = new ArrayList<Block>(selection.getBlocks());
     List<Block> allTouching = getAllTouching(selection.getBlocks().get(0));
     for (Block b : allTouching) {
       List<Block> candidate = getLongestPathFrom(b);
-      if (longest == null || candidate.size() > longest.size()) {
+      if (candidate.size() > longest.size()) {
         longest = candidate;
       }
     }
@@ -200,7 +208,7 @@ public class GamePhase implements Block.Delegate, Phase {
       }
       path.add(a);
       List<Block> candidate = getLongestPathFromInner(path);
-      if (longest == null || candidate.size() > longest.size()) {
+      if (candidate.size() > longest.size()) {
         longest = new ArrayList<Block>(candidate);
       }
       path.remove(path.size() - 1);
@@ -210,7 +218,7 @@ public class GamePhase implements Block.Delegate, Phase {
 
   private List<Block> getAllTouching(Block block) {
     List<Block> result = new ArrayList<Block>();
-    Queue<Block> candidates = new ArrayDeque<Block>();
+    Queue<Block> candidates = new LinkedList<Block>();
     candidates.add(block);
     while (!candidates.isEmpty()) {
       Block candidate = candidates.remove();
@@ -250,12 +258,5 @@ public class GamePhase implements Block.Delegate, Phase {
       }
     }
     return null;
-  }
-
-  @Override
-  public void onDead() {
-    // We use a variable to keep track of this because we get notified before
-    // the child is removed.
-    childrenLeft--;
   }
 }
