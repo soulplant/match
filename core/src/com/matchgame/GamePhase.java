@@ -1,15 +1,12 @@
 package com.matchgame;
 
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -24,8 +21,7 @@ public class GamePhase implements Block.Delegate, Phase {
   private final BlockFactory blockFactory;
   private final Stage stage;
   private List<Block> longerSelection = null;
-  private Label scoreLabel;
-  private int score = 0;
+  private Score score;
   private LineTimer timer;
   private final BitmapFont font;
   private boolean isDone = false;
@@ -42,7 +38,6 @@ public class GamePhase implements Block.Delegate, Phase {
 
   @Override
   public void enter() {
-    score = 0;
     selection = null;
     longerSelection = null;
     isDone = false;
@@ -53,19 +48,14 @@ public class GamePhase implements Block.Delegate, Phase {
     Util.centerActorInStage(blockGroup, stage);
     stage.addActor(blockGroup);
 
-    LabelStyle labelStyle = new LabelStyle();
-    labelStyle.font = font;
-    labelStyle.fontColor = Color.BLACK;
-    scoreLabel = new Label("60.0", labelStyle);
-    stage.addActor(scoreLabel);
-    scoreLabel.setPosition(blockGroup.getRight() - scoreLabel.getWidth(),
-        stage.getHeight() - scoreLabel.getHeight() - 200f);
+    score = new Score(font);
+    score.setBounds(0, stage.getHeight() - 200f, stage.getWidth(), 50f);
+    stage.addActor(score);
 
     timer = new LineTimer(60f);
     stage.addActor(timer);
-    timer.setPosition(blockGroup.getX(), stage.getHeight() - scoreLabel.getHeight() - 220f);
+    timer.setPosition(blockGroup.getX(), stage.getHeight() - score.getHeight() - 220f);
     timer.setSize(blockGroup.getWidth(), 4f);
-    updateScoreText();
 
     final Action done = new Action() {
       @Override
@@ -142,10 +132,9 @@ public class GamePhase implements Block.Delegate, Phase {
     }
     for (Block b : selection.getBlocks()) {
       b.die();
-      score++;
     }
+    score.incrementBy(selection.getBlocks().size());
 
-    updateScoreText();
     selection = null;
   }
 
@@ -171,10 +160,6 @@ public class GamePhase implements Block.Delegate, Phase {
     String note = Constants.noteSoundNames[Math.min(Constants.noteSoundNames.length - 1,
         selection.getBlocks().size() - 1)];
     sounds.get(note).play();
-  }
-
-  private void updateScoreText() {
-    scoreLabel.setText(score + "");
   }
 
   private List<Block> getLongerSelection(BlockSelection selection) {
