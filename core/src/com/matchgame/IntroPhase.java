@@ -1,35 +1,27 @@
 package com.matchgame;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class IntroPhase implements Block.Delegate, Phase {
   private final BlockFactory blockFactory;
   private final Stage stage;
+  private Resources resources;
   private boolean done = false;
   private final List<Block> blocks = new ArrayList<Block>();
   private int currentVisibleBlock;
-  private final BitmapFont smallFont;
-  private final BitmapFont largeFont;
-  private Map<String, Sound> sounds;
 
-  public IntroPhase(BlockFactory blockFactory, Stage stage,
-      BitmapFont largeFont, BitmapFont smallFont, Map<String, Sound> sounds) {
+  public IntroPhase(BlockFactory blockFactory, Stage stage, Resources resources) {
     this.blockFactory = blockFactory;
     this.stage = stage;
-    this.largeFont = largeFont;
-    this.smallFont = smallFont;
-    this.sounds = sounds;
+    this.resources = resources;
   }
 
   @Override
@@ -46,7 +38,7 @@ public class IntroPhase implements Block.Delegate, Phase {
     }
 
     // Button label.
-    Label buttonLabel = new Label("Play", new LabelStyle(smallFont, Color.BLACK));
+    Label buttonLabel = new Label("Play", new LabelStyle(resources.getLabelFont(), Color.BLACK));
     float bottom = blocks.get(0).getY();
     float padding = 40;
     Util.centerActorInStage(buttonLabel, stage);
@@ -54,7 +46,7 @@ public class IntroPhase implements Block.Delegate, Phase {
     stage.addActor(buttonLabel);
 
     // Title label.
-    Label titleLabel = new Label("Match", new LabelStyle(largeFont, Color.BLACK));
+    Label titleLabel = new Label("Match", new LabelStyle(resources.getTitleFont(), Color.BLACK));
     Util.centerActorInStage(titleLabel, stage);
     titleLabel.setY(stage.getHeight() - titleLabel.getHeight() - 5 * padding);
     stage.addActor(titleLabel);
@@ -101,7 +93,7 @@ public class IntroPhase implements Block.Delegate, Phase {
   @Override
   public void onDragEnd(Block block) {
     block.die();
-    sounds.get("c").play();
+    resources.getSoundByName("c").play();
   }
 
   @Override

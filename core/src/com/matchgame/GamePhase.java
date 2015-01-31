@@ -20,19 +20,16 @@ public class GamePhase implements Block.Delegate, Phase {
   private int childrenLeft = 0;
   private final BlockFactory blockFactory;
   private final Stage stage;
+  private Resources resources;
   private List<Block> longerSelection = null;
   private Score score;
   private LineTimer timer;
-  private final BitmapFont font;
   private boolean isDone = false;
-  private Map<String, Sound> sounds;
 
-  public GamePhase(BlockFactory blockFactory, Stage stage, BitmapFont font,
-                   Map<String, Sound> sounds) {
+  public GamePhase(BlockFactory blockFactory, Stage stage, Resources resources) {
     this.blockFactory = blockFactory;
     this.stage = stage;
-    this.font = font;
-    this.sounds = sounds;
+    this.resources = resources;
     blockGroup = new Group();
   }
 
@@ -48,7 +45,7 @@ public class GamePhase implements Block.Delegate, Phase {
     Util.centerActorInStage(blockGroup, stage);
     stage.addActor(blockGroup);
 
-    score = new Score(font);
+    score = new Score(resources);
     score.setBounds(0, stage.getHeight() - 200f, stage.getWidth(), 50f);
     stage.addActor(score);
 
@@ -74,10 +71,12 @@ public class GamePhase implements Block.Delegate, Phase {
             block.setIndicating(true);
             stage.addAction(Actions.sequence(pause, done));
           }
-          sounds.get("fail").play();
+          resources.getSoundByName("fail").play();
+          score.addRemainingPoints();
           return true;
         }
         if (timer.isDone()) {
+          score.addRemainingPoints();
           stage.addAction(Actions.sequence(pause, done));
           return true;
         }
@@ -159,7 +158,7 @@ public class GamePhase implements Block.Delegate, Phase {
     block.setSelected(true);
     String note = Constants.noteSoundNames[Math.min(Constants.noteSoundNames.length - 1,
         selection.getBlocks().size() - 1)];
-    sounds.get(note).play();
+    resources.getSoundByName(note).play();
   }
 
   private List<Block> getLongerSelection(BlockSelection selection) {

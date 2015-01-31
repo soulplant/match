@@ -26,24 +26,9 @@ public class MatchGame extends ApplicationAdapter {
   private final List<Texture> blockTextures = new ArrayList<Texture>();
   private DefaultBlockFactory blockFactory;
   private CyclicPhaseRunner runner;
-  private Map<String, Sound> sounds = new HashMap<String, Sound>();
 
   @Override
   public void create() {
-    for (String note : Constants.noteSoundNames) {
-      loadSound(note);
-    }
-    loadSound(Constants.failSoundName);
-    FreeTypeFontGenerator gen = new FreeTypeFontGenerator(
-        Gdx.files.internal("JosefinSlab-Regular.ttf"));
-    FreeTypeFontParameter param = new FreeTypeFontParameter();
-    param.size = 150;
-    BitmapFont mediumFont = gen.generateFont(param);
-    param.size = 250;
-    BitmapFont largeFont = gen.generateFont(param);
-    param.size = 100;
-    BitmapFont smallFont = gen.generateFont(param);
-    gen.dispose();
     batch = new SpriteBatch();
     for (int i = 0; i < 4; i++) {
       blockTextures.add(new Texture("Block" + (i + 1) + ".png"));
@@ -52,13 +37,10 @@ public class MatchGame extends ApplicationAdapter {
     stage = new Stage(new ScreenViewport());
     Gdx.input.setInputProcessor(stage);
     List<Phase> phases = new ArrayList<Phase>();
-    phases.add(new IntroPhase(blockFactory, stage, largeFont, smallFont, sounds));
-    phases.add(new GamePhase(blockFactory, stage, mediumFont, sounds));
+    Resources resources = new Resources();
+    phases.add(new IntroPhase(blockFactory, stage, resources));
+    phases.add(new GamePhase(blockFactory, stage, resources));
     runner = new CyclicPhaseRunner(phases);
-  }
-
-  private void loadSound(String note) {
-    sounds.put(note, Gdx.audio.newSound(Gdx.files.internal(note + ".wav")));
   }
 
   private void scheduleSound(final Sound sound, float delay) {
