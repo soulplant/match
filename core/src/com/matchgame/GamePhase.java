@@ -59,6 +59,16 @@ public class GamePhase implements Block.Delegate, Phase {
       }
     };
     final Action pause = Actions.delay(3f);
+    final Action finished = Actions.sequence(new Action() {
+      @Override
+      public boolean act(float delta) {
+        score.addRemainingPoints();
+        for (Block block : getBlocks()) {
+          block.lock();
+        }
+        return true;
+      }
+    }, pause, done);
 
     Action play = new Action() {
       @Override
@@ -69,12 +79,11 @@ public class GamePhase implements Block.Delegate, Phase {
             stage.addAction(Actions.sequence(pause, done));
           }
           resources.getSoundByName("fail").play();
-          score.addRemainingPoints();
+          stage.addAction(finished);
           return true;
         }
         if (timer.isDone()) {
-          score.addRemainingPoints();
-          stage.addAction(Actions.sequence(pause, done));
+          stage.addAction(finished);
           return true;
         }
         if (childrenLeft == 0) {
@@ -84,6 +93,14 @@ public class GamePhase implements Block.Delegate, Phase {
       }
     };
     stage.addAction(play);
+  }
+
+  private List<Block> getBlocks() {
+    ArrayList<Block> blocks = new ArrayList<Block>();
+    for (Actor child : blockGroup.getChildren()) {
+      blocks.add((Block) child);
+    }
+    return blocks;
   }
 
   @Override

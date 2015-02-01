@@ -17,6 +17,29 @@ class Block extends Actor {
   private final int x;
   private final int y;
   private final Texture blockTexture;
+  private final InputListener inputListener = new InputListener() {
+    @Override
+    public boolean touchDown(InputEvent event, float x, float y, int pointer,
+                             int button) {
+      if (pointer != 0) {
+        return false;
+      }
+      delegate.onDragStart(Block.this);
+      return true;
+    }
+
+    @Override
+    public void touchUp(InputEvent event, float x, float y, int pointer,
+                        int button) {
+      delegate.onDragEnd(Block.this);
+    }
+
+    @Override
+    public void enter(InputEvent event, float x, float y, int pointer,
+                      Actor fromActor) {
+      delegate.onDragEnter(Block.this);
+    }
+  };
   private float w;
   private float h;
   private final Delegate delegate;
@@ -24,6 +47,10 @@ class Block extends Actor {
   private ShapeRenderer renderer;
   private final int colorIndex;
   private boolean isDying;
+
+  /**
+   * True if this block is 'indicating', that is, indicating that it is part of the longest run.
+   */
   private boolean isIndicating;
 
   public interface Delegate {
@@ -48,29 +75,7 @@ class Block extends Actor {
 
     setBounds(x * w, y * h, w, h);
 
-    addListener(new InputListener() {
-      @Override
-      public boolean touchDown(InputEvent event, float x, float y, int pointer,
-          int button) {
-        if (pointer != 0) {
-          return false;
-        }
-        delegate.onDragStart(Block.this);
-        return true;
-      }
-
-      @Override
-      public void touchUp(InputEvent event, float x, float y, int pointer,
-          int button) {
-        delegate.onDragEnd(Block.this);
-      }
-
-      @Override
-      public void enter(InputEvent event, float x, float y, int pointer,
-          Actor fromActor) {
-        delegate.onDragEnter(Block.this);
-      }
-    });
+    addListener(inputListener);
   }
 
   public int getLogicalX() {
@@ -83,6 +88,10 @@ class Block extends Actor {
 
   public int getLogicalColor() {
     return colorIndex;
+  }
+
+  public void lock() {
+    removeListener(inputListener);
   }
 
   @Override
@@ -98,7 +107,7 @@ class Block extends Actor {
       renderer.end();
       batch.begin();
     }
-    if (isIndicating()) {
+    if (isIndicating) {
       batch.end();
       renderer.setTransformMatrix(batch.getTransformMatrix());
       renderer.setColor(Color.ORANGE);
@@ -111,10 +120,6 @@ class Block extends Actor {
 
   private boolean isSelected() {
     return isSelected;
-  }
-
-  private boolean isIndicating() {
-    return isIndicating;
   }
 
   public void setSelected(boolean selected) {
