@@ -131,7 +131,8 @@ class Block extends Actor {
     setZIndex(17);
     setTouchable(Touchable.disabled);
     addAction(Actions.sequence(
-        Actions.moveBy(0f, 100f, 0.2f, Interpolation.exp10Out), Actions.parallel(Actions.fadeOut(0.2f, Interpolation.fade)),
+        Actions.parallel(Actions.moveBy(0f, 100f, 0.2f, Interpolation.exp10Out),
+            Actions.fadeOut(0.2f, Interpolation.fade)),
         new Action() {
           @Override
           public boolean act(float delta) {
