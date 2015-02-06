@@ -41,4 +41,8 @@ public class LineTimer extends Group {
   public boolean isDone() {
     return elapsed >= duration;
   }
+
+  public void addDuration(float extra) {
+    duration += extra;
+  }
 }

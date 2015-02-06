@@ -7,9 +7,13 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Random;
+import java.util.Set;
 
 public class GamePhase implements Block.Delegate, Phase {
   private final Group blockGroup;
@@ -18,15 +22,17 @@ public class GamePhase implements Block.Delegate, Phase {
   private final BlockFactory blockFactory;
   private final Stage stage;
   private Resources resources;
+  private Random random;
   private List<Block> longerSelection = null;
   private Score score;
   private LineTimer timer;
   private boolean isDone = false;
 
-  public GamePhase(BlockFactory blockFactory, Stage stage, Resources resources) {
+  public GamePhase(BlockFactory blockFactory, Stage stage, Resources resources, Random random) {
     this.blockFactory = blockFactory;
     this.stage = stage;
     this.resources = resources;
+    this.random = random;
     blockGroup = new Group();
   }
 
@@ -146,9 +152,105 @@ public class GamePhase implements Block.Delegate, Phase {
     for (Block b : selection.getBlocks()) {
       b.die();
     }
-    score.incrementBy(selection.getBlocks().size());
+    score.incrementBy(selection.size());
+    if (selection.size() >= 4) {
+      // Consider:
+      // replaceAllSinglesWithColor(selection.getLogicalColor());
+      switch (selection.getLogicalColor()) {
+        case Constants.COLOR_RED:
+          replaceAllSinglesWithColor(Constants.COLOR_RED);
+          break;
+        case Constants.COLOR_GRAY:
+          fillAdjacentBlocksWith(Constants.COLOR_GRAY);
+          break;
+        case Constants.COLOR_GREEN:
+          fillEmptySpacesWith(getRandomColor());
+          break;
+        case Constants.COLOR_CYAN:
+          replaceSelectionWith(getRandomColor());
+          break;
+      }
+    }
 
     selection = null;
+  }
+
+  private void replaceSelectionWith(int color) {
+    for (Block block : selection.getBlocks()) {
+      addBlock(blockFactory.createColoredBlock(block.getLogicalX(), block.getLogicalY(), color, this));
+    }
+  }
+
+  private int getRandomColor() {
+    return random.nextInt(Constants.COLOR_COUNT);
+  }
+
+  private void fillEmptySpacesWith(int color) {
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        if (getBlockAt(i, j) == null) {
+          addBlock(blockFactory.createColoredBlock(i, j, color, this));
+        }
+      }
+    }
+  }
+
+  private void addBlock(Block block) {
+    blockGroup.addActor(block);
+    this.childrenLeft++;
+  }
+
+  private void fillAdjacentBlocksWith(int color) {
+    Set<Block> adjacentBlocks = new HashSet<Block>();
+    for (Block block : selection.getBlocks()) {
+      adjacentBlocks.addAll(getAdjacent(block));
+    }
+
+    Set<Block> fillAdjacentBlocks = new HashSet<Block>();
+    for (Block block : adjacentBlocks) {
+      fillAdjacentBlocks.addAll(getAllTouching(block));
+    }
+    changeColor(fillAdjacentBlocks, color);
+  }
+
+  private void changeColor(Collection<Block> blocks, int color) {
+    for (Block block : blocks) {
+      if (block.getLogicalColor() != color) {
+        System.out.println("Different color, changing from " + block.getLogicalColor() + " to " + color);
+        Block newBlock = blockFactory.createColoredBlock(
+            block.getLogicalX(), block.getLogicalY(), color, this);
+        replaceBlock(block, newBlock);
+      }
+    }
+  }
+
+  private void replaceAllSinglesWithColor(int colorIndex) {
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        Block block = getBlockAt(i, j);
+        if (block == null) {
+          continue;
+        }
+        if (isSingle(block)) {
+          Block newBlock = blockFactory.createColoredBlock(i, j, colorIndex, this);
+          replaceBlock(block, newBlock);
+        }
+      }
+    }
+  }
+
+  private void replaceBlock(Block oldBlock, Block newBlock) {
+    blockGroup.addActorAfter(oldBlock, newBlock);
+    blockGroup.removeActor(oldBlock);
+  }
+
+  private boolean isSingle(Block block) {
+    for (Block neighbor : getAdjacentWithSameColor(block)) {
+      if (neighbor.getLogicalColor() == block.getLogicalColor()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override
@@ -159,12 +261,12 @@ public class GamePhase implements Block.Delegate, Phase {
   }
 
   private void createBlocks() {
+    childrenLeft = 0;
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
-        blockGroup.addActor(blockFactory.createBlock(i, j, this));
+        addBlock(blockFactory.createBlock(i, j, this));
       }
     }
-    childrenLeft = 16;
   }
 
   private void addBlockToSelection(Block block) {
@@ -199,7 +301,7 @@ public class GamePhase implements Block.Delegate, Phase {
   private List<Block> getLongestPathFromInner(List<Block> path) {
     Block block = path.get(path.size() - 1);
     List<Block> longest = new ArrayList<Block>(path);
-    List<Block> adjacent = getAdjacent(block);
+    List<Block> adjacent = getAdjacentWithSameColor(block);
     for (Block a : adjacent) {
       if (path.contains(a)) {
         continue;
@@ -220,7 +322,7 @@ public class GamePhase implements Block.Delegate, Phase {
     candidates.add(block);
     while (!candidates.isEmpty()) {
       Block candidate = candidates.remove();
-      List<Block> adjacent = getAdjacent(candidate);
+      List<Block> adjacent = getAdjacentWithSameColor(candidate);
       for (Block b : adjacent) {
         if (!candidates.contains(b) && !result.contains(b)) {
           candidates.add(b);
@@ -235,23 +337,37 @@ public class GamePhase implements Block.Delegate, Phase {
     int x = block.getLogicalX();
     int y = block.getLogicalY();
     List<Block> result = new ArrayList<Block>();
-    addIfHasColour(block.getLogicalColor(), getBlockAt(x - 1, y), result);
-    addIfHasColour(block.getLogicalColor(), getBlockAt(x + 1, y), result);
-    addIfHasColour(block.getLogicalColor(), getBlockAt(x, y - 1), result);
-    addIfHasColour(block.getLogicalColor(), getBlockAt(x, y + 1), result);
+    addIfNotNull(getBlockAt(x - 1, y), result);
+    addIfNotNull(getBlockAt(x + 1, y), result);
+    addIfNotNull(getBlockAt(x, y - 1), result);
+    addIfNotNull(getBlockAt(x, y + 1), result);
     return result;
   }
 
-  private void addIfHasColour(int logicalColor, Block block, List<Block> result) {
-    if (block != null && block.getLogicalColor() == logicalColor) {
+  private List<Block> getAdjacentWithSameColor(Block block) {
+    List<Block> result = new ArrayList<Block>();
+    for (Block adjacentBlock : getAdjacent(block)) {
+      if (adjacentBlock.getLogicalColor() == block.getLogicalColor()) {
+        result.add(adjacentBlock);
+      }
+    }
+    return result;
+  }
+
+  private void addIfNotNull(Block block, List<Block> result) {
+    if (block != null) {
       result.add(block);
     }
   }
 
   private Block getBlockAt(int x, int y) {
+    return getBlockAtInner(x, y, true);
+  }
+
+  private Block getBlockAtInner(int x, int y, boolean allowDead) {
     for (Actor actor : blockGroup.getChildren()) {
       Block block = (Block) actor;
-      if (block.getLogicalX() == x && block.getLogicalY() == y && !block.isDying()) {
+      if (block.getLogicalX() == x && block.getLogicalY() == y && (allowDead || !block.isDying())) {
         return block;
       }
     }

@@ -45,4 +45,8 @@ public class BlockSelection {
   public int size() {
     return blocks.size();
   }
+
+  public int getLogicalColor() {
+    return blocks.get(0).getLogicalColor();
+  }
 }
