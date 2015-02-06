@@ -216,7 +216,6 @@ public class GamePhase implements Block.Delegate, Phase {
   private void changeColor(Collection<Block> blocks, int color) {
     for (Block block : blocks) {
       if (block.getLogicalColor() != color) {
-        System.out.println("Different color, changing from " + block.getLogicalColor() + " to " + color);
         Block newBlock = blockFactory.createColoredBlock(
             block.getLogicalX(), block.getLogicalY(), color, this);
         replaceBlock(block, newBlock);
@@ -279,7 +278,7 @@ public class GamePhase implements Block.Delegate, Phase {
 
   private List<Block> getLongerSelection(BlockSelection selection) {
     List<Block> longest = new ArrayList<Block>(selection.getBlocks());
-    List<Block> allTouching = getAllTouching(selection.getBlocks().get(0));
+    List<Block> allTouching = removeDying(getAllTouching(selection.getBlocks().get(0)));
     for (Block b : allTouching) {
       List<Block> candidate = getLongestPathFrom(b);
       if (candidate.size() > longest.size()) {
@@ -292,6 +291,16 @@ public class GamePhase implements Block.Delegate, Phase {
     return longest;
   }
 
+  private List<Block> removeDying(List<Block> blocks) {
+    List<Block> result = new ArrayList<Block>();
+    for (Block b : blocks) {
+      if (!b.isDying()) {
+        result.add(b);
+      }
+    }
+    return result;
+  }
+
   private List<Block> getLongestPathFrom(Block startingBlock) {
     List<Block> result = new ArrayList<Block>();
     result.add(startingBlock);
@@ -301,7 +310,7 @@ public class GamePhase implements Block.Delegate, Phase {
   private List<Block> getLongestPathFromInner(List<Block> path) {
     Block block = path.get(path.size() - 1);
     List<Block> longest = new ArrayList<Block>(path);
-    List<Block> adjacent = getAdjacentWithSameColor(block);
+    List<Block> adjacent = removeDying(getAdjacentWithSameColor(block));
     for (Block a : adjacent) {
       if (path.contains(a)) {
         continue;
