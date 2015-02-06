@@ -16,13 +16,14 @@ import java.util.Random;
 import java.util.Set;
 
 public class GamePhase implements Block.Delegate, Phase {
-  private final Group blockGroup;
-  private BlockSelection selection = null;
-  private int blocksLeft = 0;
   private final BlockFactory blockFactory;
   private final Stage stage;
-  private Resources resources;
-  private Random random;
+  private final Resources resources;
+  private final Random random;
+
+  private final Group blockGroup = new Group();
+  private BlockSelection selection = null;
+  private int blocksLeft = 0;
   private List<Block> longerSelection = null;
   private Score score;
   private LineTimer timer;
@@ -33,7 +34,6 @@ public class GamePhase implements Block.Delegate, Phase {
     this.stage = stage;
     this.resources = resources;
     this.random = random;
-    blockGroup = new Group();
   }
 
   @Override
