@@ -18,7 +18,7 @@ import java.util.Set;
 public class GamePhase implements Block.Delegate, Phase {
   private final Group blockGroup;
   private BlockSelection selection = null;
-  private int childrenLeft = 0;
+  private int blocksLeft = 0;
   private final BlockFactory blockFactory;
   private final Stage stage;
   private Resources resources;
@@ -92,7 +92,7 @@ public class GamePhase implements Block.Delegate, Phase {
           stage.addAction(finished);
           return true;
         }
-        if (childrenLeft == 0) {
+        if (blocksLeft == 0) {
           createBlocks();
         }
         return false;
@@ -197,7 +197,7 @@ public class GamePhase implements Block.Delegate, Phase {
 
   private void addBlock(Block block) {
     blockGroup.addActor(block);
-    this.childrenLeft++;
+    this.blocksLeft++;
   }
 
   private void fillAdjacentBlocksWith(int color) {
@@ -255,12 +255,12 @@ public class GamePhase implements Block.Delegate, Phase {
   @Override
   public void onDead() {
     // We use a variable to keep track of this because we get notified before
-    // the child is removed.
-    childrenLeft--;
+    // the block is removed from its group.
+    blocksLeft--;
   }
 
   private void createBlocks() {
-    childrenLeft = 0;
+    blocksLeft = 0;
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
         addBlock(blockFactory.createBlock(i, j, this));
