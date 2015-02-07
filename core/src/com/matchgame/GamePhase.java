@@ -21,13 +21,13 @@ public class GamePhase implements Block.Delegate, Phase {
   private final Resources resources;
   private final Random random;
 
-  private final Group blockGroup = new Group();
-  private BlockSelection selection = null;
-  private int blocksLeft = 0;
-  private List<Block> longerSelection = null;
+  private Group blockGroup;
+  private BlockSelection selection;
+  private int blocksLeft;
+  private List<Block> longerSelection;
   private Score score;
   private LineTimer timer;
-  private boolean isDone = false;
+  private boolean isDone;
 
   public GamePhase(BlockFactory blockFactory, Stage stage, Resources resources, Random random) {
     this.blockFactory = blockFactory;
@@ -41,6 +41,7 @@ public class GamePhase implements Block.Delegate, Phase {
     selection = null;
     longerSelection = null;
     isDone = false;
+    blockGroup = new Group();
     createBlocks();
     float groupWidthPx = blockGroup.getChildren().get(0).getWidth() * 4f;
     float groupHeightPx = blockGroup.getChildren().get(0).getHeight() * 4f;

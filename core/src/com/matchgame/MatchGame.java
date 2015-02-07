@@ -40,6 +40,7 @@ public class MatchGame extends ApplicationAdapter {
     Resources resources = new Resources();
     phases.add(new IntroPhase(blockFactory, stage, resources));
     phases.add(new GamePhase(blockFactory, stage, resources, new Random()));
+    phases.add(new HighscorePhase(stage));
     runner = new CyclicPhaseRunner(phases);
   }
 
